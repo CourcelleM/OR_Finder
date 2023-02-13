@@ -1,0 +1,3 @@
+# label and content of the 13 OR gene sub-families according to Hayden et al. 2010
+Hayden, S., Bekaert, M., Crider, T.A., Mariani, S., Murphy, W.J. and Teeling, E.C., 2010. Ecological adaptation determines functional mammalian olfactory subgenomes. Genome research, 20(1), pp.1-9.
+

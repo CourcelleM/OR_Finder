@@ -1,0 +1,13 @@
+__default__:
+        job-name : "{rule}"
+        queue : "agap_normal"
+        nodes : "--nodes=1 "
+        cpus : "--cpus-per-task=1"
+        time : "--time=1:00:00"
+        out : "--output={params.clust_log}"
+
+Hmmer:
+        cpus : "--cpus-per-task=2"
+
+Phylofilter:
+        cpus : "--cpus-per-task=10"

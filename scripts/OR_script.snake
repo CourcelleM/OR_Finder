@@ -1,0 +1,309 @@
+#Version: oct 2022
+
+import glob
+import re
+import sys
+from os.path import join
+
+#########################################
+## SCRIPT PARAMETERS - READ FROM CONFIG FILE 
+
+# Directory with input fastq files and reference genome
+DATADIR=config["DATADIR"]
+
+# Reference genome file
+refgen=config["refgen"]
+#########################################
+
+SAMPLES, = glob_wildcards(DATADIR+"{sample}"+".fas")
+ORFAM, = glob_wildcards("scripts/hmmbuild/4sp_OR-"+"{orfam}"+".hmm")
+
+def message(txt):
+        sys.stderr.write("+++++ " + txt + "\n")
+
+def errormessage(txt):
+        sys.stderr.write("ERROR " + txt + "\n")
+
+NBSAMPLES = len(SAMPLES)
+
+message("Looking for genomes in: "+str(DATADIR))
+message(str(NBSAMPLES)+" genomes will be analyzed:")
+for i in SAMPLES:
+        message(str(i))
+
+localrules: All, Concat_hmmout, SplitFasta
+
+rule All:
+	input:
+		expand("Results/{smp}_allORs_ORAout_nored_lap_noDubious.fas", smp=SAMPLES)
+
+rule Uniline:
+	input:
+		DATADIR+"{smp}"+".fas"
+	output:
+		"Results/Intermediary_files/{smp}_uniline.fas"
+	params:
+		clust_log="Logs/{smp}_multi2uniline.log"
+	shell:
+		"""
+		while read line ; do 
+		if [[ $line == ">"* ]] ; then echo -e "\n$line" ; else echo -n "$line" ; fi
+		done < {input} > {output}
+		"""
+
+rule Hmmer:
+	input:
+		genome=rules.Uniline.output,
+		hmmbuild="scripts/hmmbuild/4sp_OR-{ORfam}.hmm"
+	output:
+		"Results/Intermediary_files/{smp}_OR-{ORfam}.hmmout"
+	params:
+		clust_log="Logs/{smp}_nhmmer_to_{ORfam}.log"
+	conda:
+		"hmmer.yaml"
+	shell:
+		"""
+		nhmmer --cpu 2 {input.hmmbuild} {input.genome} > {output}
+		"""
+
+rule Hmmout_to_hitlist:
+	input:
+		rules.Hmmer.output
+	output:
+		"Results/Intermediary_files/{smp}_OR-{ORfam}.hitlist"
+	params:
+		clust_log="Logs/{smp}-{ORfam}_to_hitlist.log"
+	shell:
+		"""
+		nhits=$(grep "Total number of hits" {input} | awk '{{print $(NF-1)}}')
+		echo "Total number of hits: $nhits"
+		head -n $(expr 16 + $nhits) {input} | tail -n $(expr $nhits + 2) | grep -ve '---' | sed '/^$/d' > {output}
+		"""
+
+rule Extract_hmmout:
+	input:
+		hmmout=rules.Hmmout_to_hitlist.output,
+		genome=rules.Uniline.output
+	output:
+		"Results/Intermediary_files/{smp}_OR-{ORfam}.fas"
+	params:
+		clust_log="Logs/{smp}_extract_{ORfam}.log"
+	conda:
+		"biopython.yaml"
+	shell:
+		"""
+		scripts/Extract_hmmout.py {input.hmmout} {input.genome} > {output}
+		"""
+
+rule Concat_hmmout:
+	input:
+		expand("Results/Intermediary_files/{{smp}}_OR-{ORfam}.fas", ORfam=ORFAM)
+	output:
+		temp("Results/Intermediary_files/{smp}_allORs.fas")
+	params:
+		clust_log="Logs/{smp}_concatORs.log"
+	shell:
+		"""
+		cat {input} > {output}
+		"""
+
+rule Cdhit:
+	input:
+		rules.Concat_hmmout.output
+	output:
+		"Results/Intermediary_files/{smp}_allORs_nored.fas"
+	params:
+		clust_log="Logs/{smp}_cdhit.log",
+		clstr_file="Results/Intermediary_files/{smp}_allORs_nored.fas.clstr",
+		genome="{smp}"+"_",
+		seqnames="Results/Intermediary_files/{smp}_seqnames.lst"
+	conda:
+		"cdhit.yaml"
+	shell:
+		"""
+		cd-hit -T 10 -bak 0 -c 0.98 -i {input} -o {output}
+		sleep 5
+		rm {params.clstr_file}
+		
+		sed -i "s/>/>{params.genome}/" {output}
+
+		grep '>' {output} | sort | uniq -cd > {params.seqnames}
+
+		if [ ! -s {params.seqnames} ] ; then
+			echo "No duplicate names."
+			rm {params.seqnames}
+		else
+			while read line ; do
+				seq=$(echo $line | cut -d' ' -f 2)
+				nrep=$(echo $line | cut -d' ' -f 1)
+				echo $seq $nrep
+				for n in $(seq 1 $nrep) ; do
+					sed -i "0,/^$seq$/{{s/^${{seq}}$/${{seq}}_${{n}}/}}" {output}
+				done
+			done < {params.seqnames}
+			rm {params.seqnames}
+		fi
+		"""
+
+rule SplitFasta:
+	input:
+		rules.Cdhit.output
+	output:
+		expand("Results/Intermediary_files/{{smp}}_{code}", code=["aa","ab","ac","ad","ae","af","ag","ah","ai","aj"])
+	params:
+		clust_log="Logs/{smp}_splitfasta.log",
+		prefix="Results/Intermediary_files/"+"{smp}"+"_"
+	shell:
+		"""
+		nor=$(grep -c '>' {input})
+		nlines=$(expr $(expr $nor / 20) \* 4)
+		split -l $nlines {input} {params.prefix}
+		"""
+
+rule ORA:
+	input:
+		"Results/Intermediary_files/{smp}_{code,[abcdefghijk]+}"
+	output:
+		"Results/Intermediary_files/{smp}_{code,[abcdefghijk]+}.ORAout"
+	params:
+		clust_log="Logs/{smp}_ORA_{code,[abcdefghijk]+}.log"
+	conda:
+		"ora.yaml"
+	shell:
+		"""
+		echo "In case conda refuse to make the environment, you may have to edit your ~/.condarc and set channel priority to 'flexible'."
+		echo "In case something goes wrong here, please check that snakemake uses perl from the conda environment and not from the system first." 
+		perlPath=`which perl`
+		echo "$perlPath" 
+		libPath="${{CONDA_PREFIX}}/lib/perl5/5.22.0"
+		echo "$libPath" 
+		
+		export PERL5LIB=$libPath
+		
+		cd scripts/ora
+		make install
+		
+		cd ../../
+		
+		or.pl --sequence={input} > {output}
+		"""
+
+rule UnilineResults:
+	input:
+		expand("Results/Intermediary_files/{{smp}}_{code}.ORAout", code=["aa","ab","ac","ad","ae","af","ag","ah","ai","aj"])
+	output:
+		"Results/Intermediary_files/{smp}_allORs_ORAout.fas"
+	params:
+		clust_log="Logs/{smp}_unilineResults.log",
+		temp_file="Results/Intermediary_files/{smp}_tmp"
+	shell:
+		"""
+		cat {input} > {params.temp_file}
+		sed -i '/^$/d' {params.temp_file}
+		scripts/multi2uniline_fasta.awk {params.temp_file} > {output}
+		rm {params.temp_file}
+		"""
+
+rule CdhitORA:
+	input:
+		rules.UnilineResults.output
+	output:
+		"Results/Intermediary_files/{smp}_allORs_ORAout_nored_lap.fas"
+	params:
+		clust_log="Logs/{smp}_CdhitORA.log",
+		temp_file="Results/Intermediary_files/{smp}_tmp2"
+	conda:
+		"cdhit.yaml"
+	shell:
+		"""
+		cd-hit -T 10 -c 0.98 -i {input} -o {params.temp_file}
+		scripts/cd-hit-lap -m 40 -i {params.temp_file} -o {output}
+		rm {params.temp_file}
+		"""
+
+rule SplitPhyloFilter:
+	input:
+		rules.CdhitORA.output
+	output:
+		expand("Results/Intermediary_files/{{smp}}_allORs_ORAout_nored_lap.fas_uni_part_{code}", code=["aa","ab","ac","ad","ae","af","ag","ah","ai","aj"])
+	params:
+		clust_log="Logs/{smp}_Splitphylofilter.log",
+		tmp1="Results/Intermediary_files/{smp}_allORs_ORAout_nored_lap.fas_uni"
+	conda:
+		"phylofilter.yaml"
+	shell:
+		"""
+		scripts/multi2uniline_fasta.awk {input} > {params.tmp1}
+		nSeqs=$(grep -c '>' {input})
+		nLines=$(expr $(expr $(expr $nSeqs / 10 ) + 1 ) \* 2 )
+
+		split -l $nLines {params.tmp1} {params.tmp1}_part_
+		"""
+
+rule Phylofilter:
+	input:
+		"Results/Intermediary_files/{smp}_allORs_ORAout_nored_lap.fas_uni_part_{code}"
+	output:
+		temp("Results/Intermediary_files/{smp}_part_{code}_phylo_OK")
+	params:
+		ORAout=rules.CdhitORA.output,
+		clust_log="Logs/{smp}_part_{code}_phylofilter.log"
+	conda:
+		"phylofilter.yaml"
+	shell:
+		"""
+		while read line ; do
+			if [[ $line == ">"* ]] ; then
+				seqname=$line
+			else
+				seq_to_ali=$(echo "Results/Intermediary_files/$seqname" | tr '|' '_' | tr -d '>').fas
+				echo $seqname > $seq_to_ali
+				echo $line >> $seq_to_ali
+				mafft --auto --add $seq_to_ali scripts/Sample_and_Outgrp.fasta > ${{seq_to_ali}}ta
+				rm $seq_to_ali
+				fasttree -nt -fastest -nosupport -pseudo -gtr -cat 20 -gamma < ${{seq_to_ali}}ta > ${{seq_to_ali/fas/tre}}
+				rm ${{seq_to_ali}}ta
+				Rscript scripts/checkORtrees.R ${{seq_to_ali/fas/tre}} > ${{seq_to_ali/fas/state}}
+				if [ ! -s ${{seq_to_ali/fas/state}} ] ; then echo "$seq_to_ali NOT Dubious!" ; rm ${{seq_to_ali/fas/tre}} ${{seq_to_ali/fas/state}} ; fi
+			fi
+		done < {input}
+		echo 'Done' > {output}
+		"""
+
+rule MarkDubious:
+	input:
+		phyol=expand("Results/Intermediary_files/{{smp}}_part_{code}_phylo_OK", code=["aa","ab","ac","ad","ae","af","ag","ah","ai","aj"]),
+		ORAout=rules.CdhitORA.output
+	output:
+		"Results/{smp}_allORs_ORAout_nored_lap_noDubious.fas"
+	params:
+		clust_log="Logs/{smp}_markDubious.log",
+		dubious="Results/Intermediary_files/{smp}_dubiousSequences.lst",
+		state_prefix="Results/Intermediary_files/{smp}"
+	shell:
+		"""
+		ls {params.state_prefix}*state | sed 's/_OR/|OR/' | sed 's/_PSEUDO/|PSEUDO/' | sed 's/.state//' >> {params.dubious}
+		
+		while read line ; do 
+			if [[ $line == ">"* ]] ; then seqname=$line ; else
+				if ! grep -q ${{seqname/>}} {params.dubious} ; then echo $seqname >> {output} ; echo $line >> {output} ; fi
+			fi
+		done < {input.ORAout}
+		
+		rm {params.state_prefix}*state 
+		"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
