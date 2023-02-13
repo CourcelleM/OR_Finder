@@ -180,12 +180,12 @@ rule ORA:
 		
 		export PERL5LIB=$libPath
 		
-		cd scripts/ora
-		make install
+		#cd scripts/ora
+		#make install
 		
-		cd ../../
+		#cd ../../
 		
-		or.pl --sequence={input} > {output}
+		$perlPath scripts/ora/scripts/or.pl --sequence={input} > {output}
 		"""
 
 rule UnilineResults:
