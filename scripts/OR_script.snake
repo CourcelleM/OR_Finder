@@ -180,7 +180,6 @@ rule ORA:
 		
 		export PERL5LIB=$libPath
 		
-		#cd scripts/ora
 		#make install
 		
 		#cd ../../
