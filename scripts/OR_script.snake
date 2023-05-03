@@ -35,9 +35,7 @@ localrules: All, Concat_hmmout, SplitFasta, GrepIntacts, SplitResults
 
 rule All:
 	input:
-		expand("Results/{smp}_allORs_ORAout_nored_lap_noDubious.fas", smp=SAMPLES),
-		expand("Results/Intermediary_files/{smp}_a", smp=SAMPLES),
-		expand("Results/Intermediary_files/{smp}_b", smp=SAMPLES)
+		expand("Results/Intermediary_files/{smp}_IntactSeqs.fas", smp=SAMPLES)
 
 rule Uniline:
 	input:
