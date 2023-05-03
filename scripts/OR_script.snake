@@ -303,31 +303,3 @@ rule GrepIntacts:
 		"""
 		while read line ; do if [[ ${{line:0:1}} == ">" ]] ; then seqname=$line ; else if ! $(echo $seqname | grep -q 'PSEUDO') && ! $(echo $line | grep -q 'N') ; then echo $seqname >> {output} ; echo $line >> {output} ; fi ; fi ; done < {input}
 		"""
-
-rule NT2AA:
-	input:
-		rules.GrepIntacts.output
-	output:
-		temp("Results/Intermediary_files/{smp}_IntactSeqs_AA.fas")
-	params:
-		clust_log="Logs/{smp}_macse.log"
-	conda:
-		"macse.yaml"
-	shell:
-		"""
-		macse -prog translateNT2AA -out_AA {output} -seq {input}
-		"""
-
-rule SplitResults:
-	input:
-		rules.NT2AA.output
-	output:
-		"Results/Intermediary_files/{smp}_a",
-		"Results/Intermediary_files/{smp}_b"
-	params:
-		prefix="Results/Intermediary_files/{smp}_"
-	shell:
-		"""
-		#Necessary in case OR file is too large to be processed in one go.
-		split -a 1 -n l/2 {input} {params.prefix}
-		"""
