@@ -1,5 +1,6 @@
 __default__:
         job-name : "{rule}"
+        partition : "agap"
         queue : "agap_normal"
         nodes : "--nodes=1 "
         cpus : "--cpus-per-task=1"
