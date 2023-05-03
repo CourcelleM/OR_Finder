@@ -4,6 +4,6 @@
 # Directory with input fastq files and reference genome
 DATADIR: "/home/courcellem/scratch/OR_SCRIPT/data/"
 
-# Reference genome file
-refgen: "ref/NC_005283.1.fasta"
+# Genome file suffix. Anything BEFORE that string in the filename will be considered as a sample identifier.
+SUFFIX: ".fna"
 

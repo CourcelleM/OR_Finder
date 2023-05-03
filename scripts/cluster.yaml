@@ -5,9 +5,16 @@ __default__:
         cpus : "--cpus-per-task=1"
         time : "--time=1:00:00"
         out : "--output={params.clust_log}"
+        mem : ""
 
 Hmmer:
         cpus : "--cpus-per-task=2"
 
 Phylofilter:
         cpus : "--cpus-per-task=10"
+
+NT2AA:
+        queue : "agap_short"
+
+Extract_hmmout:
+        mem : "--mem 10G"
