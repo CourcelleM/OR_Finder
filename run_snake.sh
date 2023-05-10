@@ -1,6 +1,6 @@
 #!/bin/bash
 
-module load snakemake/7.15.1-conda
+module load snakemake
 
 if ! [ -d Results/Intermediary_files ] ; then mkdir -p Results/Intermediary_files ; fi
 if ! [ -d Logs ] ; then mkdir -p Logs ; fi
