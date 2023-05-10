@@ -11,6 +11,6 @@ configfile: scripts/parameters.yaml
 
 ## CLUSTER PARAMETERS - ADAPT HERE
 cluster-config: scripts/cluster.yaml
-cluster: "sbatch -J {cluster.job-name} -A agap -p {cluster.queue} {cluster.time} {cluster.nodes} {cluster.cpus} {cluster.out}"
+cluster: "sbatch -J {cluster.job-name} -A {cluster.partition} -p {cluster.queue} {cluster.time} {cluster.nodes} {cluster.cpus} {cluster.out}"
 max-jobs-per-second: 1
 jobs: 100
