@@ -11,11 +11,11 @@ read ANSWER
 case $ANSWER in
 	y)
 		echo "Using the cluster.yaml config file."
-		snakemake -s scripts/OR_script.snake --profile scripts/config_cluster.yaml
+		snakemake --profile profiles/CLUSTER 
 		;;
 	n)
 		echo "Local run."
-		snakemake -s scripts/OR_script.snake --profile scripts/config.yaml
+		snakemake --profile profiles/LOCAL
 		;;
 	*)
 		echo "Unknown answer."
