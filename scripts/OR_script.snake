@@ -162,7 +162,7 @@ rule SplitFasta:
 
 rule ORA:
 	input:
-		"Results/Intermediary_files/{smp}_{code,[abcdefghijk]+}"
+		"Results/Intermediary_files/{smp}_{code}"
 	output:
 		"Results/Intermediary_files/{smp}_{code,[abcdefghijk]+}.ORAout"
 	params:
