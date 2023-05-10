@@ -7,3 +7,10 @@ DATADIR: "/home/courcellem/scratch/OR_SCRIPT/data/"
 # Genome file suffix. Anything BEFORE that string in the filename will be considered as a sample identifier.
 SUFFIX: ".fna"
 
+
+## SNAKEMAKE PARAMETERS - ADAPT HERE
+use-conda: True
+use-singularity: True
+singularity-args: ""
+rerun-incomplete: True
+restart-times: 1

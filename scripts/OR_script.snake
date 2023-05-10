@@ -31,7 +31,7 @@ message(str(NBSAMPLES)+" genomes will be analyzed:")
 for i in SAMPLES:
         message(str(i))
 
-localrules: All, Concat_hmmout, SplitFasta, GrepIntacts, SplitResults
+localrules: All, Concat_hmmout, SplitFasta, GrepIntacts
 
 rule All:
 	input:
