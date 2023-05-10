@@ -1,0 +1,8 @@
+## SCRIPT PARAMETERS - ADAPT HERE
+#
+## Directory with input fastq files and reference genome
+DATADIR: "/home/courcellem/scratch/OR_SCRIPT/data/"
+
+## Genome file suffix. Anything BEFORE that string in the filename will be considered as a sample identifier.
+SUFFIX: ".fas"
+

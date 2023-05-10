@@ -167,24 +167,11 @@ rule ORA:
 		"Results/Intermediary_files/{smp}_{code,[abcdefghijk]+}.ORAout"
 	params:
 		clust_log="Logs/{smp}_ORA_{code,[abcdefghijk]+}.log"
-	conda:
-		"ora.yaml"
+	container:
+		"library://courcellem/ora/ora_singer:latest"
 	shell:
 		"""
-		echo "In case conda refuse to make the environment, you may have to edit your ~/.condarc and set channel priority to 'flexible'."
-		echo "In case something goes wrong here, please check that snakemake uses perl from the conda environment and not from the system first." 
-		perlPath=`which perl`
-		echo "$perlPath" 
-		libPath="${{CONDA_PREFIX}}/lib/perl5/5.22.0"
-		echo "$libPath" 
-		
-		export PERL5LIB=$libPath
-		
-		#make install
-		
-		#cd ../../
-		
-		$perlPath scripts/ora/scripts/or.pl --sequence={input} > {output}
+		or.pl --sequence={input} > {output}
 		"""
 
 rule UnilineResults:

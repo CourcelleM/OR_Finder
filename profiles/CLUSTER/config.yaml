@@ -1,0 +1,16 @@
+# YAML file format
+## SNAKEMAKE PARAMETERS - ADAPT HERE
+snakefile: scripts/OR_script.snake
+cores: 1
+use-conda: True
+use-singularity: True
+singularity-args: ""
+rerun-incomplete: True
+restart-times: 1
+configfile: scripts/parameters.yaml
+
+## CLUSTER PARAMETERS - ADAPT HERE
+cluster-config: scripts/cluster.yaml
+cluster: "sbatch -J {cluster.job-name} -A agap -p {cluster.queue} {cluster.time} {cluster.nodes} {cluster.cpus} {cluster.out}"
+max-jobs-per-second: 1
+jobs: 100
