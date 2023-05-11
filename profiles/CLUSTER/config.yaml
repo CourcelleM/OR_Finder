@@ -7,10 +7,10 @@ use-singularity: True
 singularity-args: ""
 rerun-incomplete: True
 restart-times: 1
-configfile: scripts/parameters.yaml
+configfile: user_parameters/parameters.yaml
 
 ## CLUSTER PARAMETERS - ADAPT HERE
-cluster-config: scripts/cluster.yaml
+cluster-config: user_parameters/cluster.yaml
 cluster: "sbatch -J {cluster.job-name} -A {cluster.partition} -p {cluster.queue} {cluster.mem} {cluster.time} {cluster.nodes} {cluster.cpus} {cluster.out}"
 max-jobs-per-second: 1
 jobs: 100
