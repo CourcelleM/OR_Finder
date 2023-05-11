@@ -7,4 +7,4 @@ use-singularity: True
 singularity-args: ""
 rerun-incomplete: True
 restart-times: 1
-configfile: scripts/parameters.yaml
+configfile: user_parameters/parameters.yaml
