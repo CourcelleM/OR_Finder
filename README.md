@@ -7,8 +7,8 @@ Feel free to contact me @ maxime.courcelle1 @ gmail.com in the meantime.
 
 # Installation
 ## Requirements
-- [Snakemake](https://snakemake.readthedocs.io/en/stable/index.html) (version 3.9.0 or more recent).
-- [Singularity](https://github.com/sylabs/singularity/releases)
+- [Snakemake](https://snakemake.readthedocs.io/en/stable/index.html) (version >= 3.9.0).
+- [Singularity](https://github.com/sylabs/singularity/releases) (version >= 3.0).
 
 ## Clone this repository
 ```
