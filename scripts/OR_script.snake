@@ -42,13 +42,13 @@ rule Uniline:
 	input:
 		DATADIR+"{smp}"+SUFFIX
 	output:
-		"Results/Intermediary_files/{smp}_uniline.fas"
+		temp("Results/Intermediary_files/{smp}_uniline.fas")
 	params:
 		clust_log="Logs/{smp}_multi2uniline.log"
 	shell:
 		"""
 		while read line ; do 
-		if [[ $line == ">"* ]] ; then echo -e "\n$line" ; else echo -n "$line" ; fi
+		if [[ ${{line:0:1}} == ">" ]] ; then echo -e "\n$line" ; else echo -n "$line" ; fi
 		done < {input} > {output}
 		"""
 
@@ -289,3 +289,5 @@ rule GrepIntacts:
 		"""
 		while read line ; do if [[ ${{line:0:1}} == ">" ]] ; then seqname=$line ; else if ! $(echo $seqname | grep -q 'PSEUDO') && ! $(echo $line | grep -q 'N') ; then echo $seqname >> {output} ; echo $line >> {output} ; fi ; fi ; done < {input}
 		"""
+
+#### https://github.com/ElofssonLab/TOPCONS2#run-topcons2-with-singularity singularity pull docker://nanjiang/topcons2
