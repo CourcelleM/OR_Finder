@@ -37,6 +37,10 @@ In case you prefer to run the script non-interactively, you can pass the "--loca
 - Local mode: Snakemake will not attempt to send jobs to remote machines and will instead conduct the analysis on the computer on which the script is running.
 - Cluster mode: Snakemake Snakemake will only run the job manager locally (a very lightweight application which keeps track of the analysis' progress), and send all more demanding rules on remote nodes. By default, Snakemake expects the cluster workload manager to be SLURM (cf **User configuration**).
 
+```
+./run_snake.sh
+```
+
 # Known issues
 ## Singularity image not downloading
 Singularity image download default remote change : https://apptainer.org/docs/user/latest/endpoint.html#no-default-remote
