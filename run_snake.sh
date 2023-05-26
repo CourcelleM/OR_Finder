@@ -1,6 +1,9 @@
 #!/bin/bash
 
-module load snakemake
+if ! command -v snakemake &> /dev/null
+then
+    module load snakemake
+fi
 
 if ! [ -d Results/Intermediary_files ] ; then mkdir -p Results/Intermediary_files ; fi
 if ! [ -d Logs ] ; then mkdir -p Logs ; fi
