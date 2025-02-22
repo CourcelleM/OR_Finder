@@ -30,7 +30,7 @@ In case your cluster do not use the slurm job manager, edit the CLUSTER PARAMETE
 Executing the **test_run.sh** script will attempt a snakemake _dry-run_. No analysis are conducted but this may allow you to check that your data are detected correctly and the requirements are fulfilled.
 
 ### Running the analysis
-Executing the **test_run.sh** script can be done interactively when no arguments are provided. In this case, a prompt will ask you whether you intend to run the analysis localy or on a computer cluster. The answer defines which profile snakemake will use to distribute jobs and parallelize the analysis. Profiles can be reviewed (and eventually edited) in the profiles directory.  
+Executing the **run_snake.sh** script can be done interactively when no arguments are provided. In this case, a prompt will ask you whether you intend to run the analysis localy or on a computer cluster. The answer defines which profile snakemake will use to distribute jobs and parallelize the analysis. Profiles can be reviewed (and eventually edited) in the profiles directory.  
 In case you prefer to run the script non-interactively, you can pass the "--local" or "--cluster" argument to use the corresponding profile.
 - Local mode: Snakemake will not attempt to send jobs to remote machines and will instead conduct the analysis on the computer on which the script is running.
 - Cluster mode: Snakemake Snakemake will only run the job manager locally (a very lightweight application which keeps track of the analysis' progress), and send all more demanding rules on remote nodes. By default, Snakemake expects the cluster workload manager to be SLURM (cf **User configuration**).
