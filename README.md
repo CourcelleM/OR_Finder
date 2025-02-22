@@ -1,9 +1,7 @@
 # OR_Finder
 A snakemake-encapsulated bioinformatics pipeline to extract olfactory receptor genes for mammalian genomes.
 
-Full documentation to come !
-
-Feel free to contact me @ maxime.courcelle1 @ gmail.com in the meantime.
+Feel free to contact me at maxime.courcelle1 @ gmail.com in the meantime.
 
 # Installation
 ## Requirements
